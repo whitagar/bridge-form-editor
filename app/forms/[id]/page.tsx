@@ -1,4 +1,5 @@
 import Form from "@/components/form";
+import PasswordProtection from "@/components/passwordProtection";
 import { getForm } from "@/services/formData";
 
 const FormPage = async ({ params }: { params: { id: string } }) => {
@@ -6,9 +7,9 @@ const FormPage = async ({ params }: { params: { id: string } }) => {
   const formData = await getForm({ id: params.id });
 
   return (
-    <div>
+    <PasswordProtection>
       <Form form={formData} />
-    </div>
+    </PasswordProtection>
   );
 };
 
