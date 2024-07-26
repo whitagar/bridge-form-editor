@@ -34,6 +34,7 @@ export enum FormidableFieldType {
   IP = "ip",
   IPV4 = "ipv4",
   IPV6 = "ipv6",
+  Likert = "likert",
   LongText = "long_text",
   MultipleFiles = "multiple_files",
   PhoneNumber = "phone_number",
@@ -51,6 +52,14 @@ export enum FormidableFieldType {
   YesNo = "yes_no",
   ZIP = "zip",
 }
+
+export const TYPES_WITH_ENUM = [
+  FormidableFieldType.Checkbox,
+  FormidableFieldType.Dropdown,
+  FormidableFieldType.Likert,
+  FormidableFieldType.Radio,
+  FormidableFieldType.SearchableDropdown,
+];
 
 // Field type
 export interface FormidableField {

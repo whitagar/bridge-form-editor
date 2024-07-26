@@ -4,6 +4,7 @@ import {
   FormidableEnumOption,
   FormidableField,
   FormidableFieldType,
+  TYPES_WITH_ENUM,
 } from "@/types/form";
 import { OnDragEndResponder } from "@hello-pangea/dnd";
 import { Delete } from "@mui/icons-material";
@@ -12,7 +13,6 @@ import {
   Collapse,
   FormControl,
   FormControlLabel,
-  FormGroup,
   IconButton,
   InputLabel,
   MenuItem,
@@ -179,9 +179,20 @@ const Field = ({
               labelId="type-select-label"
               id={`field-${field.name}-type-select`}
               value={field.type}
-              onChange={(e) =>
-                onFieldChange({ ...field, type: e.target.value })
-              }
+              onChange={(e) => {
+                const newField = { ...field, type: e.target.value };
+                if (
+                  TYPES_WITH_ENUM.includes(
+                    e.target.value as FormidableFieldType
+                  )
+                ) {
+                  newField.enum = {
+                    uuid: v4(),
+                    enum_options: [],
+                  };
+                }
+                onFieldChange(newField);
+              }}
               variant="outlined"
             >
               {Object.entries(FormidableFieldType).map(([label, t], idx) => {
@@ -199,71 +210,78 @@ const Field = ({
               })}
             </Select>
           </FormControl>
-          {field.enum && (
-            <>
-              <div className="flex items-center justify-start">
-                <h3 className="text-black">Enum Options</h3>
-                <Button onClick={handleAddEnumOption}>
-                  Add new enum option
-                </Button>
-              </div>
-              <List
-                id={`enum-${field.enum.id ?? field.enum.uuid}`}
-                onDragEnd={handleEnumOptionDragEnd}
-                draggable={shouldAllowEnumOptionDrag}
-              >
-                {field.enum.enum_options.map((option, optionIndex) => {
-                  const id = option.id ?? option.uuid ?? option.label;
+          {TYPES_WITH_ENUM.includes(field.type as FormidableFieldType) &&
+            field.enum && (
+              <>
+                <div className="flex items-center justify-start">
+                  <h3 className="text-black">Enum Options</h3>
+                  <Button onClick={handleAddEnumOption}>
+                    Add new enum option
+                  </Button>
+                </div>
+                <List
+                  id={`enum-${field.enum.id ?? field.enum.uuid}`}
+                  onDragEnd={handleEnumOptionDragEnd}
+                  draggable={shouldAllowEnumOptionDrag}
+                >
+                  {field.enum.enum_options.map((option, optionIndex) => {
+                    const id = option.id ?? option.uuid ?? option.label;
 
-                  return (
-                    <ListItem
-                      id={id.toString()}
-                      key={id}
-                      index={optionIndex}
-                      draggable={shouldAllowEnumOptionDrag}
-                    >
-                      <EnumOption
-                        enumOption={option}
-                        isEditing={isEditingByEnumOption[id]}
-                        onEnumOptionChange={(newEnumOption) => {
-                          const newEnumOptions = field.enum?.enum_options || [];
-                          newEnumOptions.splice(optionIndex, 1, newEnumOption);
-                          onFieldChange({
-                            ...field,
-                            enum: {
-                              ...field.enum,
-                              enum_options: newEnumOptions,
-                            },
-                          });
-                        }}
-                        onRemove={() => {
-                          const newEnumOptions = field.enum?.enum_options || [];
-                          newEnumOptions.splice(optionIndex, 1);
-                          onFieldChange({
-                            ...field,
-                            enum: {
-                              ...field.enum,
-                              enum_options: newEnumOptions,
-                            },
-                          });
-                        }}
-                        onFinishEditing={() => {
-                          setIsEditingByEnumOption((prev) => {
-                            return { ...prev, [id]: false };
-                          });
-                        }}
-                        onBeginEditing={() => {
-                          setIsEditingByEnumOption((prev) => {
-                            return { ...prev, [id]: true };
-                          });
-                        }}
-                      />
-                    </ListItem>
-                  );
-                })}
-              </List>
-            </>
-          )}
+                    return (
+                      <ListItem
+                        id={id.toString()}
+                        key={id}
+                        index={optionIndex}
+                        draggable={shouldAllowEnumOptionDrag}
+                      >
+                        <EnumOption
+                          enumOption={option}
+                          isEditing={isEditingByEnumOption[id]}
+                          onEnumOptionChange={(newEnumOption) => {
+                            const newEnumOptions =
+                              field.enum?.enum_options || [];
+                            newEnumOptions.splice(
+                              optionIndex,
+                              1,
+                              newEnumOption
+                            );
+                            onFieldChange({
+                              ...field,
+                              enum: {
+                                ...field.enum,
+                                enum_options: newEnumOptions,
+                              },
+                            });
+                          }}
+                          onRemove={() => {
+                            const newEnumOptions =
+                              field.enum?.enum_options || [];
+                            newEnumOptions.splice(optionIndex, 1);
+                            onFieldChange({
+                              ...field,
+                              enum: {
+                                ...field.enum,
+                                enum_options: newEnumOptions,
+                              },
+                            });
+                          }}
+                          onFinishEditing={() => {
+                            setIsEditingByEnumOption((prev) => {
+                              return { ...prev, [id]: false };
+                            });
+                          }}
+                          onBeginEditing={() => {
+                            setIsEditingByEnumOption((prev) => {
+                              return { ...prev, [id]: true };
+                            });
+                          }}
+                        />
+                      </ListItem>
+                    );
+                  })}
+                </List>
+              </>
+            )}
           <TextField
             value={field.hint}
             onChange={(e) =>
@@ -404,10 +422,10 @@ const Field = ({
             ></TextField>
           </div>
 
-          {field.type === "complex" && (
+          {(field.type === "complex" || field.type === "likert") && (
             <>
               <div className="flex items-center justify-start">
-                <h3 className="text-black">Stacked Fields</h3>
+                <h3 className="text-black">Internal Fields</h3>
                 <Button onClick={handleAddField}>Add new field</Button>
               </div>
               <List
