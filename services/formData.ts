@@ -6,7 +6,8 @@ type GetFormInput = {
 
 export const getForm = async ({ id }: GetFormInput) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DJANGO_API_URL}/api/form/${id}/`
+    `${process.env.NEXT_PUBLIC_DJANGO_API_URL}/api/form/${id}/`,
+    { cache: "no-cache" }
   );
   // The return value is *not* serialized
   // You can return Date, Map, Set, etc.
